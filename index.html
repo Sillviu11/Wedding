@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invitație Nuntă</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --burgundy:      #6B1A2A;
+      --burgundy-deep: #4A0F1C;
+      --burgundy-mid:  #8B2035;
+      --burgundy-soft: #C05070;
+      --cream:         #FAF0EC;
+      --warm-white:    #FFF8F5;
+      --gold:          #C9A050;
+      --gold-light:    #E8CF98;
+      --gold-pale:     #F5E8C8;
+      --muted:         #9B7070;
+      --deep:          #2A1010;
+      --font-display:  'Cormorant Garamond', serif;
+      --font-body:     'Jost', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--deep);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+    }
+
+    /* ════════════════════════════════════
+       CARD DECK INTRO
+    ════════════════════════════════════ */
+    #card-intro {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: var(--burgundy-deep);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 1.2s ease, visibility 1.2s ease;
+    }
+    #card-intro.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .deck-label {
+      font-family: var(--font-body);
+      font-size: 0.65rem;
+      font-weight: 200;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin-bottom: 48px;
+      animation: fadeUp 1s ease 0.3s both;
+      opacity: 0.8;
+    }
+
+    /* The card deck container */
+    .deck-wrapper {
+      position: relative;
+      width: 160px;
+      height: 220px;
+      cursor: pointer;
+      animation: fadeUp 1s ease 0.6s both;
+    }
+
+    /* Each card in the deck (stacked, closed) */
+    .deck-card {
+      position: absolute;
+      width: 160px;
+      height: 220px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.55), 1px 1px 0 rgba(255,255,255,0.08) inset;
+      transition: transform 0.5s cubic-bezier(.34,1.56,.64,1);
+      backface-visibility: hidden;
+    }
+
+    /* Bicycle-style card box — SVG fills the whole card */
+    .deck-card.back { display: block; padding: 0; background: #C8102E; }
+    .deck-card.back svg { width: 100%; height: 100%; display: block; }
+
+    /* Closed stack — tight offsets, no fan */
+    .deck-card:nth-child(1) { transform: rotate(-4deg) translate(-3px, 6px);  z-index: 1; }
+    .deck-card:nth-child(2) { transform: rotate(-2deg) translate(-1px, 3px);  z-index: 2; }
+    .deck-card:nth-child(3) { transform: rotate( 1deg) translate( 1px, 1px);  z-index: 3; }
+    .deck-card:nth-child(4) { transform: rotate( 3deg) translate( 3px,-1px);  z-index: 4; }
+
+    /* Deck pulse hint to invite a click */
+    .deck-wrapper:not(.clicked):hover .deck-card { filter: brightness(1.06); }
+
+    /* ── ACE OVERLAY ── pops up centered over everything */
+    #ace-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+    }
+    #ace-overlay.show {
+      pointer-events: all;
+      animation: acePopIn 0.55s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    #ace-overlay.hide {
+      animation: acePopOut 0.5s ease forwards;
+    }
+    @keyframes acePopIn {
+      from { opacity: 0; transform: scale(0.4) rotate(-8deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+    @keyframes acePopOut {
+      from { opacity: 1; transform: scale(1); }
+      to   { opacity: 0; transform: scale(1.12); }
+    }
+
+    .ace-card {
+      width: 220px;
+      height: 310px;
+      border-radius: 16px;
+      background: #fff;
+      border: 3px solid var(--gold);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 6px rgba(201,160,80,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .ace-card .ace-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding: 18px;
+      position: relative;
+    }
+    .ace-corner {
+      position: absolute;
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      line-height: 1.1;
+      color: var(--burgundy);
+      text-align: center;
+    }
+    .ace-corner.tl { top: 12px; left: 14px; }
+    .ace-corner.br { bottom: 12px; right: 14px; transform: rotate(180deg); }
+    .ace-big-heart {
+      font-size: 7rem;
+      line-height: 1;
+      color: var(--burgundy);
+      filter: drop-shadow(0 4px 12px rgba(107,26,42,0.35));
+      animation: heartBeat 1.8s ease-in-out infinite;
+    }
+    .ace-names {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--burgundy-mid);
+      letter-spacing: 0.08em;
+      margin-top: 10px;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    @keyframes heartBeat {
+      0%, 100% { transform: scale(1); }
+      15%       { transform: scale(1.12); }
+      30%       { transform: scale(1); }
+      45%       { transform: scale(1.06); }
+    }
+
+    /* hint text below deck */
+    .deck-hint {
+      margin-top: 48px;
+      font-family: var(--font-body);
+      font-size: 0.6rem;
+      font-weight: 200;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      animation: fadeUp 1s ease 1.2s both;
+      text-align: center;
+      opacity: 0.7;
+    }
+
+    /* ════════════════════════════════════
+       MUSIC BUTTON
+    ════════════════════════════════════ */
+    #music-btn {
+      position: fixed; bottom: 28px; right: 28px; z-index: 999;
+      background: var(--burgundy-deep);
+      color: var(--gold-light);
+      border: 1px solid var(--gold);
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-family: var(--font-body); font-size: 0.72rem; font-weight: 300;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(74,15,28,0.4);
+    }
+    #music-btn:hover { background: var(--burgundy-mid); border-color: var(--burgundy-soft); color: #fff; }
+    #music-btn .note { font-size: 1rem; }
+
+    /* ════════════════════════════════════
+       HERO
+    ════════════════════════════════════ */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding-bottom: 60px;
+    }
+    #hero-bg {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(135deg, var(--burgundy-deep) 0%, var(--burgundy) 45%, var(--burgundy-mid) 100%);
+    }
+    /* Decorative texture overlay */
+    #hero-bg::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 80%, rgba(201,160,80,0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(201,160,80,0.06) 0%, transparent 40%);
+    }
+    /* Grain texture */
+    #hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    #hero::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(42,16,16,0.55) 0%, transparent 55%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: var(--cream);
+      animation: fadeUp 1.4s ease both;
+      padding: 0 24px;
+    }
+
+    /* Godparents strip at top */
+    .hero-godparents {
+      position: absolute;
+      top: 40px;
+      left: 0; right: 0;
+      z-index: 2;
+      text-align: center;
+      animation: fadeUp 1s ease 0.3s both;
+    }
+    .hero-godparents .gp-label {
+      font-family: var(--font-body);
+      font-size: 0.58rem;
+      font-weight: 200;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      opacity: 0.75;
+      margin-bottom: 6px;
+    }
+    .hero-godparents .gp-names {
+      font-family: var(--font-display);
+      font-size: clamp(1rem, 3.5vw, 1.5rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--gold-light);
+      letter-spacing: 0.06em;
+    }
+    .gp-divider {
+      display: inline-block;
+      width: 1px;
+      height: 18px;
+      background: var(--gold);
+      opacity: 0.4;
+      vertical-align: middle;
+      margin: 0 14px;
+    }
+
+    .hero-ornament {
+      color: var(--gold);
+      font-size: 1.2rem;
+      letter-spacing: 0.4em;
+      margin-bottom: 30px;
+      opacity: 0.8;
+    }
+    .hero-eyebrow {
+      font-family: var(--font-body); font-weight: 200;
+      font-size: 0.68rem; letter-spacing: 0.4em; text-transform: uppercase;
+      color: var(--gold-light); margin-bottom: 24px; opacity: 0.85;
+    }
+    .hero-names {
+      font-family: var(--font-display); font-weight: 300;
+      font-size: clamp(3.4rem, 11vw, 7.5rem);
+      line-height: 1; letter-spacing: 0.02em; color: #fff;
+      text-shadow: 0 2px 40px rgba(0,0,0,0.4);
+    }
+    .hero-names .ampersand {
+      font-style: italic; color: var(--gold-light); font-size: 0.82em;
+      display: block; line-height: 1.15;
+    }
+    .hero-date {
+      margin-top: 24px;
+      font-family: var(--font-body); font-weight: 200;
+      font-size: 0.78rem; letter-spacing: 0.32em; text-transform: uppercase;
+      color: var(--gold-light);
+    }
+    .hero-date-line {
+      display: inline-block; width: 40px; height: 1px;
+      background: var(--gold); opacity: 0.5; vertical-align: middle;
+      margin: 0 14px;
+    }
+
+    .scroll-hint {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: rgba(255,255,255,0.4); font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase;
+      animation: bounce 2.5s infinite;
+    }
+    .scroll-hint svg { width: 16px; opacity: 0.5; }
+
+    /* ════════════════════════════════════
+       SECTIONS — shared
+    ════════════════════════════════════ */
+    section { padding: 90px 24px; max-width: 760px; margin: 0 auto; }
+
+    .section-label {
+      font-family: var(--font-body); font-size: 0.63rem; font-weight: 300;
+      letter-spacing: 0.38em; text-transform: uppercase;
+      color: var(--burgundy-soft); margin-bottom: 28px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; max-width: 60px; height: 1px;
+      background: rgba(192,80,112,0.3);
+    }
+
+    /* ════════════════════════════════════
+       INVITE TEXT
+    ════════════════════════════════════ */
+    #invite { text-align: center; }
+    #invite .section-label { justify-content: center; }
+    #invite .section-label::after { display: none; }
+    .invite-text {
+      font-family: var(--font-display);
+      font-size: clamp(1.3rem, 3.5vw, 1.95rem);
+      font-weight: 300; line-height: 1.8;
+      color: var(--deep); font-style: italic;
+    }
+    .invite-text strong { font-style: normal; font-weight: 600; color: var(--burgundy); }
+    .divider-ornament { text-align: center; color: var(--gold); font-size: 1.2rem; margin: 36px 0; letter-spacing: 0.35em; }
+
+    /* ════════════════════════════════════
+       COUNTDOWN
+    ════════════════════════════════════ */
+    #countdown {
+      background: linear-gradient(135deg, var(--burgundy-deep), var(--burgundy));
+      max-width: 100%; padding: 90px 24px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    #countdown::before {
+      content: ''; position: absolute; inset: 0;
+      background-image:
+        radial-gradient(circle at 10% 50%, rgba(201,160,80,0.07) 0%, transparent 40%),
+        radial-gradient(circle at 90% 50%, rgba(201,160,80,0.05) 0%, transparent 40%);
+      pointer-events: none;
+    }
+    #countdown .section-label { justify-content: center; color: var(--gold-light); }
+    #countdown .section-label::after { display: none; }
+    .countdown-title {
+      font-family: var(--font-display); font-size: clamp(1.1rem, 3vw, 1.5rem);
+      font-weight: 300; font-style: italic; color: var(--cream); margin-bottom: 52px; opacity: 0.85;
+    }
+    .countdown-grid {
+      display: flex; justify-content: center; align-items: flex-end;
+      flex-wrap: nowrap; gap: 0; width: 100%; max-width: 580px; margin: 0 auto;
+    }
+    .countdown-unit { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+    .countdown-number {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 8vw, 5.8rem);
+      font-weight: 300; color: var(--gold-light); line-height: 1; text-align: center; width: 100%;
+    }
+    .countdown-sep {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 5.5vw, 4.2rem);
+      color: var(--gold-light); line-height: 1;
+      padding-bottom: 22px; flex-shrink: 0; padding-left: 2px; padding-right: 2px; opacity: 0.5;
+    }
+    .countdown-label {
+      font-family: var(--font-body); font-size: clamp(0.42rem, 1.3vw, 0.58rem);
+      font-weight: 300; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold-light); white-space: nowrap; opacity: 0.7;
+    }
+
+    /* ════════════════════════════════════
+       WHERE & WHEN
+    ════════════════════════════════════ */
+    #where-when {
+      max-width: 100%;
+      background: var(--warm-white);
+      padding: 90px 24px;
+    }
+    #where-when .inner { max-width: 860px; margin: 0 auto; }
+    #where-when .section-label { justify-content: center; }
+    #where-when .section-label::after { display: none; }
+    #where-when .ww-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      font-weight: 300; font-style: italic;
+      color: var(--burgundy); text-align: center; margin-bottom: 56px;
+    }
+    .ww-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    .ww-block {
+      padding: 52px 44px;
+      border: 1px solid rgba(201,160,80,0.25);
+      text-align: center;
+      background: #fff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .ww-block::before {
+      content: '';
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 40px; height: 2px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+    }
+    .ww-block:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(107,26,42,0.1); }
+    .ww-block:first-child { border-right: none; }
+    .ww-icon { font-size: 1.6rem; margin-bottom: 16px; display: block; }
+    .ww-type {
+      font-family: var(--font-body); font-size: 0.6rem; font-weight: 300;
+      letter-spacing: 0.38em; text-transform: uppercase;
+      color: var(--burgundy-soft); margin-bottom: 12px;
+    }
+    .ww-name {
+      font-family: var(--font-display); font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+      font-weight: 400; color: var(--deep); margin-bottom: 8px; line-height: 1.25;
+    }
+    .ww-address {
+      font-family: var(--font-body); font-size: 0.75rem; font-weight: 300;
+      color: var(--muted); letter-spacing: 0.04em; margin-bottom: 4px; line-height: 1.5;
+    }
+    .ww-time {
+      font-family: var(--font-display); font-style: italic;
+      font-size: 1.25rem; color: var(--burgundy-mid); margin-top: 16px;
+    }
+    .ww-maps-btn {
+      display: inline-block; margin-top: 20px;
+      padding: 10px 26px;
+      border: 1px solid rgba(201,160,80,0.4);
+      color: var(--gold);
+      font-family: var(--font-body); font-size: 0.6rem; font-weight: 300;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .ww-maps-btn:hover { background: var(--gold); color: var(--deep); border-color: var(--gold); }
+
+    /* ════════════════════════════════════
+       RSVP SECTION
+    ════════════════════════════════════ */
+    #rsvp { background: var(--cream); max-width: 100%; padding: 90px 24px; text-align: center; }
+    #rsvp .inner { max-width: 560px; margin: 0 auto; }
+    #rsvp .section-label { justify-content: center; }
+    #rsvp .section-label::after { display: none; }
+    .rsvp-title {
+      font-family: var(--font-display); font-size: clamp(2rem, 6vw, 3.2rem);
+      font-weight: 300; font-style: italic; color: var(--burgundy); margin-bottom: 12px;
+    }
+    .rsvp-sub {
+      font-family: var(--font-body); font-size: 0.8rem; font-weight: 300;
+      color: var(--muted); letter-spacing: 0.05em; margin-bottom: 40px;
+    }
+    .btn-open-rsvp {
+      display: inline-block; padding: 18px 56px;
+      background: var(--burgundy-deep); color: var(--gold-light);
+      border: 1px solid var(--burgundy-deep);
+      font-family: var(--font-body); font-size: 0.7rem; font-weight: 300;
+      letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer;
+      transition: all 0.35s ease;
+    }
+    .btn-open-rsvp:hover { background: var(--burgundy-mid); border-color: var(--burgundy-mid); color: #fff; }
+
+    /* ── MODAL ── */
+    #rsvp-modal {
+      position: fixed; inset: 0; z-index: 8888;
+      background: rgba(42,16,16,0.6); backdrop-filter: blur(5px);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+      opacity: 0; visibility: hidden; transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    #rsvp-modal.open { opacity: 1; visibility: visible; }
+    .modal-box {
+      background: var(--warm-white); width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto; padding: 48px 40px 40px;
+      position: relative; transform: translateY(24px);
+      transition: transform 0.4s ease;
+      scrollbar-width: thin; scrollbar-color: rgba(107,26,42,0.2) transparent;
+    }
+    #rsvp-modal.open .modal-box { transform: translateY(0); }
+    .modal-close {
+      position: absolute; top: 18px; right: 22px;
+      background: none; border: none; font-size: 1.4rem;
+      color: var(--muted); cursor: pointer; line-height: 1; transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--burgundy); }
+    .modal-title {
+      font-family: var(--font-display); font-size: 2rem; font-weight: 300;
+      font-style: italic; color: var(--burgundy); margin-bottom: 32px; text-align: center;
+    }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block; font-family: var(--font-body); font-size: 0.62rem;
+      font-weight: 400; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--deep); margin-bottom: 6px;
+    }
+    .form-hint {
+      font-family: var(--font-display); font-style: italic; font-size: 0.82rem;
+      color: var(--muted); margin-bottom: 8px; margin-top: -2px; display: block;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1px solid rgba(107,26,42,0.2);
+      padding: 10px 4px; font-family: var(--font-body); font-size: 0.95rem;
+      font-weight: 300; color: var(--deep); outline: none; transition: border-color 0.3s ease;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-bottom-color: var(--burgundy-mid); }
+    .form-group textarea { resize: vertical; min-height: 72px; }
+
+    /* ── TOGGLES ── */
+    .toggle-group { margin-bottom: 20px; }
+    .toggle-group label {
+      display: block; font-family: var(--font-body); font-size: 0.62rem;
+      font-weight: 400; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--deep); margin-bottom: 12px;
+    }
+    .toggle-track {
+      display: inline-flex; border: 1px solid rgba(107,26,42,0.2);
+      border-radius: 2px; overflow: hidden;
+    }
+    .toggle-track button {
+      padding: 9px 28px; border: none; background: transparent;
+      font-family: var(--font-body); font-size: 0.7rem; font-weight: 300;
+      letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted);
+      cursor: pointer; transition: all 0.25s ease;
+    }
+    .toggle-track button.active-yes { background: var(--burgundy-deep); color: var(--gold-light); }
+    .toggle-track button.active-no  { background: var(--burgundy-mid); color: #fff; }
+
+    /* ── CONDITIONAL ── */
+    .conditional-block {
+      overflow: hidden; max-height: 0; opacity: 0;
+      transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease; margin-top: 0;
+    }
+    .conditional-block.shown { max-height: 600px; opacity: 1; margin-top: 16px; }
+
+    /* ── DECLINE ── */
+    #decline-note {
+      background: rgba(107,26,42,0.05); border-left: 3px solid var(--burgundy-soft);
+      padding: 16px 18px; margin-bottom: 20px; display: none;
+    }
+    #decline-note p { font-family: var(--font-display); font-style: italic; color: var(--muted); font-size: 0.95rem; }
+
+    /* ── SUBMIT ── */
+    .btn-submit {
+      display: block; width: 100%; margin-top: 32px; padding: 18px 24px;
+      background: var(--burgundy-deep); color: var(--gold-light);
+      border: 1px solid var(--burgundy-deep);
+      font-family: var(--font-body); font-size: 0.7rem; font-weight: 300;
+      letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer;
+      transition: all 0.35s ease;
+    }
+    .btn-submit:hover { background: var(--burgundy-mid); border-color: var(--burgundy-mid); color: #fff; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    #form-msg {
+      margin-top: 18px; text-align: center; font-family: var(--font-display);
+      font-size: 1.05rem; font-style: italic; color: var(--burgundy); min-height: 24px;
+    }
+
+    /* ════════════════════════════════════
+       FOOTER
+    ════════════════════════════════════ */
+    footer {
+      background: var(--burgundy-deep);
+      text-align: center; padding: 52px 24px;
+      font-family: var(--font-display); font-size: 1rem; font-style: italic;
+    }
+    footer span { color: var(--gold-light); }
+    footer .ft-ornament { color: var(--gold); font-size: 1.1rem; letter-spacing: 0.4em; margin-bottom: 14px; display: block; opacity: 0.6; }
+
+    /* ════════════════════════════════════
+       ANIMATIONS
+    ════════════════════════════════════ */
+    @keyframes fadeUp   { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounce   { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.85s ease, transform 0.85s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ════════════════════════════════════
+       RESPONSIVE
+    ════════════════════════════════════ */
+    @media (max-width: 640px) {
+      .ww-grid { grid-template-columns: 1fr; }
+      .ww-block:first-child { border-right: 1px solid rgba(201,160,80,0.25); border-bottom: none; }
+      .ww-block { padding: 40px 24px; }
+    }
+    @media (max-width: 520px) { .modal-box { padding: 40px 22px 32px; } }
+    @media (max-width: 380px) {
+      .deck-wrapper { transform: scale(0.85); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     CARD DECK INTRO
+══════════════════════════════════════════ -->
+<div id="card-intro">
+  <p class="deck-label">Aveți o invitație</p>
+
+  <div class="deck-wrapper" id="deck" onclick="clickDeck()">
+    <!-- 4 Bicycle-style card box fronts, closed stack -->
+    <div class="deck-card back"><svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="220" rx="10" fill="#4A0F1C"/>
+      <rect x="5" y="5" width="150" height="210" rx="7" fill="none" stroke="#C9A050" stroke-width="1.8"/>
+      <rect x="11" y="11" width="138" height="198" rx="5" fill="none" stroke="#C9A050" stroke-width="0.7" opacity="0.5"/>
+      <!-- corner hearts -->
+      <text x="19" y="26"  font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="141" y="26" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="19" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="141" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <!-- stars row -->
+      <text x="80" y="38" font-family="serif" font-size="10" fill="#C9A050" text-anchor="middle" letter-spacing="5">✦ ✦ ✦</text>
+      <!-- underline below stars -->
+      <line x1="30" y1="44" x2="130" y2="44" stroke="#C9A050" stroke-width="0.8" opacity="0.7"/>
+      <!-- line 1: Fiecare joc -->
+      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">Fiecare joc</text>
+      <!-- line 2: are -->
+      <text x="80" y="105" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">are</text>
+      <!-- line 3: o carte -->
+      <text x="80" y="130" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">o carte</text>
+      <!-- line 4: câștigătoare -->
+      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare</text>
+      <!-- line 5: heart -->
+      <text x="80" y="188" font-family="serif" font-size="22" fill="#C9A050" text-anchor="middle">♥</text>
+    </svg></div>
+    <div class="deck-card back"><svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="220" rx="10" fill="#4A0F1C"/>
+      <rect x="5" y="5" width="150" height="210" rx="7" fill="none" stroke="#C9A050" stroke-width="1.8"/>
+      <rect x="11" y="11" width="138" height="198" rx="5" fill="none" stroke="#C9A050" stroke-width="0.7" opacity="0.5"/>
+      <text x="19" y="26"  font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="141" y="26" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="19" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="141" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="80" y="38" font-family="serif" font-size="10" fill="#C9A050" text-anchor="middle" letter-spacing="5">✦ ✦ ✦</text>
+      <line x1="30" y1="44" x2="130" y2="44" stroke="#C9A050" stroke-width="0.8" opacity="0.7"/>
+      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">Fiecare joc</text>
+      <text x="80" y="105" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">are</text>
+      <text x="80" y="130" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">o carte</text>
+      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare</text>
+      <text x="80" y="188" font-family="serif" font-size="22" fill="#C9A050" text-anchor="middle">♥</text>
+    </svg></div>
+    <div class="deck-card back"><svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="220" rx="10" fill="#4A0F1C"/>
+      <rect x="5" y="5" width="150" height="210" rx="7" fill="none" stroke="#C9A050" stroke-width="1.8"/>
+      <rect x="11" y="11" width="138" height="198" rx="5" fill="none" stroke="#C9A050" stroke-width="0.7" opacity="0.5"/>
+      <text x="19" y="26"  font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="141" y="26" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="19" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="141" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="80" y="38" font-family="serif" font-size="10" fill="#C9A050" text-anchor="middle" letter-spacing="5">✦ ✦ ✦</text>
+      <line x1="30" y1="44" x2="130" y2="44" stroke="#C9A050" stroke-width="0.8" opacity="0.7"/>
+      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">Fiecare joc</text>
+      <text x="80" y="105" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">are</text>
+      <text x="80" y="130" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">o carte</text>
+      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare</text>
+      <text x="80" y="188" font-family="serif" font-size="22" fill="#C9A050" text-anchor="middle">♥</text>
+    </svg></div>
+    <div class="deck-card back"><svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="220" rx="10" fill="#4A0F1C"/>
+      <rect x="5" y="5" width="150" height="210" rx="7" fill="none" stroke="#C9A050" stroke-width="1.8"/>
+      <rect x="11" y="11" width="138" height="198" rx="5" fill="none" stroke="#C9A050" stroke-width="0.7" opacity="0.5"/>
+      <text x="19" y="26"  font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="141" y="26" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="19" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="141" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
+      <text x="80" y="38" font-family="serif" font-size="10" fill="#C9A050" text-anchor="middle" letter-spacing="5">✦ ✦ ✦</text>
+      <line x1="30" y1="44" x2="130" y2="44" stroke="#C9A050" stroke-width="0.8" opacity="0.7"/>
+      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">Fiecare joc</text>
+      <text x="80" y="105" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">are</text>
+      <text x="80" y="130" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">o carte</text>
+      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare</text>
+      <text x="80" y="188" font-family="serif" font-size="22" fill="#C9A050" text-anchor="middle">♥</text>
+    </svg></div>
+  </div>
+
+  <p class="deck-hint">Apăsați pe cărți pentru a deschide</p>
+</div>
+
+<!-- ACE OF HEARTS overlay — pops up on click, auto-closes after 5s -->
+<div id="ace-overlay">
+  <div class="ace-card">
+    <div class="ace-inner">
+      <div class="ace-corner tl">A<br>♥</div>
+      <div class="ace-big-heart">♥</div>
+      <div class="ace-names">Alina<br>&amp; Silviu</div>
+      <div class="ace-corner br">A<br>♥</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MUSIC BUTTON
+══════════════════════════════════════════ -->
+<button id="music-btn" onclick="toggleMusic()">
+  <span class="note" id="music-icon">♪</span>
+  <span id="music-label"> </span>
+</button>
+
+<audio id="bg-music" loop>
+  <source src="melodie.mp3" type="audio/mpeg"/>
+</audio>
+
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<section id="hero">
+  <div id="hero-bg"></div>
+
+
+  <div class="hero-content">
+    <p class="hero-ornament">✦ ✦ ✦</p>
+    <h1 class="hero-names">
+      Alina
+      <span class="ampersand">&amp;</span>
+      Silviu
+    </h1>
+    <p class="hero-date">
+      <span class="hero-date-line"></span>
+      12 septembrie 2026
+      <span class="hero-date-line"></span>
+    </p>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M12 5v14M5 12l7 7 7-7"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     INVITE TEXT
+══════════════════════════════════════════ -->
+<section id="invite" class="reveal">
+  <p class="invite-text">
+    <!-- ✏️ ÎNLOCUIȚI TEXTUL DE MAI JOS CU TEXTUL PERSONALIZAT -->
+    sub octorirea celor care ne-au învățat valoarea<br/>
+    familiei și a iubirii necondiționate, părinții noștrii<br/>
+    <strong>Ioana și Valeriu Ambrosie</strong><br/>
+	<strong>Mihaela și Cristian Drăguț</strong><br/>
+    vă invităm să ne fiți alături în ziua în care iubirea<br/>
+    noastră devine un legământ sfânt.<br/><br/>
+	Pe drumul către fericire ne vor fi sprijin și lumină nașii<br/>
+	<strong>Maria și Ștefan Crăciun<strong><br/><br/>
+  </p>
+  <div class="divider-ornament">✦ ✦ ✦</div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     COUNTDOWN
+══════════════════════════════════════════ -->
+<section id="countdown" class="reveal">
+  <p class="countdown-title">Până în ziua cea mare mai sunt…</p>
+  <div class="countdown-grid">
+    <div class="countdown-unit">
+      <span class="countdown-number" id="cd-days">00</span>
+      <span class="countdown-label">Zile</span>
+    </div>
+    <span class="countdown-sep">:</span>
+    <div class="countdown-unit">
+      <span class="countdown-number" id="cd-hours">00</span>
+      <span class="countdown-label">Ore</span>
+    </div>
+    <span class="countdown-sep">:</span>
+    <div class="countdown-unit">
+      <span class="countdown-number" id="cd-mins">00</span>
+      <span class="countdown-label">Minute</span>
+    </div>
+    <span class="countdown-sep">:</span>
+    <div class="countdown-unit">
+      <span class="countdown-number" id="cd-secs">00</span>
+      <span class="countdown-label">Secunde</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     WHERE & WHEN
+══════════════════════════════════════════ -->
+<section id="where-when">
+  <div class="inner reveal">
+    <h2 class="ww-title">Locul evenimentului</h2>
+
+    <div class="ww-grid">
+      <!-- LEFT: Church -->
+      <div class="ww-block">
+        <span class="ww-icon">⛪</span>
+        <p class="ww-type">Cununia Religioasă</p>
+        <!-- ✏️ ÎNLOCUIȚI CU NUMELE BISERICII -->
+        <p class="ww-name">Biserica „Sfinții Arhangheli Mihail și Gavriil”</p>
+        <!-- ✏️ ÎNLOCUIȚI CU ADRESA -->
+        <p class="ww-address">Calea Drăgășani, Pitești</p>
+        <!-- ✏️ ÎNLOCUIȚI CU ORA -->
+        <p class="ww-time">Ora 16:00</p>
+        <!-- ✏️ ÎNLOCUIȚI href CU LINK-UL GOOGLE MAPS -->
+        <a class="ww-maps-btn" href="https://www.google.com/maps/place/Biserica+Sfin%C8%9Bii+Arhangheli+Mihail+%C8%99i+Gavriil/@44.8518199,24.8582053,283m/data=!3m1!1e3!4m6!3m5!1s0x40b2bc9d6f806109:0x3bab05888f6d28e7!8m2!3d44.8522958!4d24.8585897!16s%2Fg%2F11cn2wgzv5?entry=ttu&g_ep=EgoyMDI2MDQyMi4wIKXMDSoASAFQAw%3D%3D" target="_blank">🗺 Direcții</a>
+      </div>
+
+      <!-- RIGHT: Reception -->
+      <div class="ww-block">
+        <span class="ww-icon">🥂</span>
+        <p class="ww-type">Petrecerea</p>
+        <!-- ✏️ ÎNLOCUIȚI CU NUMELE SALONULUI -->
+        <p class="ww-name">Royal Park</p>
+        <!-- ✏️ ÎNLOCUIȚI CU ADRESA -->
+        <p class="ww-address">Sala Queen Elisabeth</p>
+        <!-- ✏️ ÎNLOCUIȚI CU ORA -->
+        <p class="ww-time">Ora 19:30</p>
+        <!-- ✏️ ÎNLOCUIȚI href CU LINK-UL GOOGLE MAPS -->
+        <a class="ww-maps-btn" href="https://www.google.com/maps/place/Royal+Park/@44.8956091,24.8447705,647m/data=!3m2!1e3!4b1!4m6!3m5!1s0x40b2bbcf7a2e2c35:0xd27ed08cd4c2f96d!8m2!3d44.8956053!4d24.8473454!16s%2Fg%2F1ptyjprbg?entry=ttu&g_ep=EgoyMDI2MDQyMi4wIKXMDSoASAFQAw%3D%3D" target="_blank">🗺 Direcții</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     RSVP
+══════════════════════════════════════════ -->
+<section id="rsvp">
+  <div class="inner reveal">
+    <!-- ✏️ ÎNLOCUIȚI DATA LIMITĂ -->
+    <p class="section-label" style="justify-content:center;">Vă rugăm să confirmați prezența până pe TBD</p>
+    <h2 class="rsvp-title">Veți petrece alături de noi?</h2>
+    <p class="rsvp-sub">Apăsați butonul de mai jos pentru a completa formularul de confirmare</p>
+    <button class="btn-open-rsvp" onclick="openRSVP()">Trimite răspunsul!</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     RSVP MODAL
+══════════════════════════════════════════ -->
+<div id="rsvp-modal" onclick="closeOnBackdrop(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeRSVP()">✕</button>
+    <h3 class="modal-title">Confirmarea prezenței</h3>
+
+    <div class="form-group">
+      <label for="m-name">Nume</label>
+      <span class="form-hint">Prenumele și numele de familie</span>
+      <input type="text" id="m-name" placeholder="ex. Maria Ionescu"/>
+    </div>
+
+    <div class="toggle-group">
+      <label>Răspuns</label>
+      <span class="form-hint" style="margin-bottom:10px;">Dacă nu puteți participa, selectați „Nu particip"</span>
+      <div class="toggle-track">
+        <button id="btn-yes" onclick="setAttending(true)">Particip cu drag ✓</button>
+        <button id="btn-no"  onclick="setAttending(false)">Nu particip ✗</button>
+      </div>
+    </div>
+
+    <div id="decline-note">
+      <p>Ne pare rău că nu puteți fi alături de noi. Dacă doriți, lăsați-ne un mesaj 💌</p>
+    </div>
+    <div class="conditional-block" id="block-decline">
+      <div class="form-group">
+        <textarea id="m-decline" placeholder="Mesajul dumneavoastră pentru tineri…"></textarea>
+      </div>
+    </div>
+
+    <div class="conditional-block" id="block-yes-fields">
+
+      <div class="toggle-group">
+        <label>Veniți însoțit(ă)?</label>
+        <div class="toggle-track">
+          <button id="btn-partner-yes" onclick="setPartner(true)">Da</button>
+          <button id="btn-partner-no"  onclick="setPartner(false)">Nu</button>
+        </div>
+      </div>
+
+      <div class="conditional-block" id="block-partner-name">
+        <div class="form-group">
+          <label for="m-partner">Numele partenerului/partenerei</label>
+          <span class="form-hint">Prenumele și numele de familie</span>
+          <input type="text" id="m-partner" placeholder="ex. Andrei Popescu"/>
+        </div>
+      </div>
+
+      <div class="toggle-group">
+        <label>Veniți cu copii?</label>
+        <div class="toggle-track">
+          <button id="btn-kids-yes" onclick="setKids(true)">Da</button>
+          <button id="btn-kids-no"  onclick="setKids(false)">Nu</button>
+        </div>
+      </div>
+
+      <div class="conditional-block" id="block-kids-count">
+        <div class="form-group">
+          <label for="m-kids">Câți copii?</label>
+          <input type="number" id="m-kids" placeholder="ex. 2" min="1" max="10"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="m-message">Mesaj pentru miri</label>
+        <textarea id="m-message" placeholder="Scrieți ceva frumos, amuzant sau din suflet…"></textarea>
+      </div>
+
+    </div>
+
+    <button class="btn-submit" id="rsvp-btn" onclick="sendRSVP()">Trimite răspunsul!</button>
+    <p id="form-msg"></p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════ -->
+<footer>
+  <span class="ft-ornament">✦ ✦ ✦</span>
+  <!-- ✏️ ÎNLOCUIȚI CU NUMELE ȘI DATA VOASTRĂ -->
+  <span>Alina &amp; Silviu &nbsp;·&nbsp; 12 septembrie 2026</span>
+</footer>
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════ -->
+<script>
+  /* ─────────────────────────────────────────
+     ✏️  CONFIGURAȚI EMAILJS
+     Mergeți pe emailjs.com → contul vostru și
+     înlocuiți valorile de mai jos:
+  ───────────────────────────────────────── */
+  const EMAILJS_PUBLIC_KEY  = '5CrpJr0_eWh9yqUlN';
+  const EMAILJS_SERVICE_ID  = 'service_lklr8fm';
+  const EMAILJS_TEMPLATE_ID = 'template_6eu9ox9';
+
+  /* ─────────────────────────────────────────
+     ✏️  DATA NUNȚII — format: AAAA-LL-ZZ THH:MM:SS
+  ───────────────────────────────────────── */
+  const WEDDING_DATE = new Date('2026-09-12T16:00:00');
+
+  /* ═══════════ EmailJS init ═══════════ */
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+
+  /* ═══════════ CARD DECK ═══════════ */
+  let deckClicked = false;
+
+  function clickDeck() {
+    if (deckClicked) return;
+    deckClicked = true;
+
+    const deck    = document.getElementById('deck');
+    const overlay = document.getElementById('ace-overlay');
+
+    // Briefly nudge the deck cards apart then snap back (shuffle feel)
+    deck.style.pointerEvents = 'none';
+
+    // Show the Ace overlay with pop-in animation
+    overlay.classList.add('show');
+
+    // After 5 seconds, close the ace and open the site
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      overlay.classList.add('hide');
+
+      // Once the hide animation finishes, reveal the site
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        enterSite();
+      }, 500);
+    }, 2500);
+  }
+
+  function enterSite() {
+    const intro = document.getElementById('card-intro');
+    intro.classList.add('hidden');
+    document.body.style.overflow = '';
+
+    // Start music
+    const a = document.getElementById('bg-music');
+    a.play().catch(() => {});
+    playing = true;
+    document.getElementById('music-icon').textContent = '♫';
+  }
+
+  // Block scroll while intro is shown
+  document.body.style.overflow = 'hidden';
+
+  /* ═══════════ MUSIC ═══════════ */
+  const audio = document.getElementById('bg-music');
+  let playing = false;
+
+  function toggleMusic() {
+    if (!playing) {
+      audio.play().catch(() => {});
+      document.getElementById('music-icon').textContent = '♫';
+      playing = true;
+    } else {
+      audio.pause();
+      document.getElementById('music-icon').textContent = '♪';
+      playing = false;
+    }
+  }
+
+  /* ═══════════ COUNTDOWN ═══════════ */
+  function updateCountdown() {
+    const diff = WEDDING_DATE - new Date();
+    if (diff <= 0) {
+      document.querySelector('.countdown-title').textContent = '🎉 Ziua cea mare a sosit!';
+      ['cd-days','cd-hours','cd-mins','cd-secs'].forEach(id =>
+        document.getElementById(id).textContent = '00'
+      );
+      return;
+    }
+    document.getElementById('cd-days').textContent  = String(Math.floor(diff / 86400000)).padStart(2,'0');
+    document.getElementById('cd-hours').textContent = String(Math.floor((diff % 86400000) / 3600000)).padStart(2,'0');
+    document.getElementById('cd-mins').textContent  = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+    document.getElementById('cd-secs').textContent  = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  /* ═══════════ RSVP MODAL ═══════════ */
+  let attending = null, hasPartner = null, hasKids = null;
+
+  function openRSVP() {
+    document.getElementById('rsvp-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeRSVP() {
+    document.getElementById('rsvp-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function closeOnBackdrop(e) {
+    if (e.target === document.getElementById('rsvp-modal')) closeRSVP();
+  }
+  function setAttending(val) {
+    attending = val;
+    document.getElementById('btn-yes').className = val ? 'active-yes' : '';
+    document.getElementById('btn-no').className  = val ? '' : 'active-no';
+    toggle('block-yes-fields', val);
+    toggle('block-decline', !val);
+    document.getElementById('decline-note').style.display = val ? 'none' : 'block';
+  }
+  function setPartner(val) {
+    hasPartner = val;
+    document.getElementById('btn-partner-yes').className = val ? 'active-yes' : '';
+    document.getElementById('btn-partner-no').className  = val ? '' : 'active-no';
+    toggle('block-partner-name', val);
+  }
+  function setKids(val) {
+    hasKids = val;
+    document.getElementById('btn-kids-yes').className = val ? 'active-yes' : '';
+    document.getElementById('btn-kids-no').className  = val ? '' : 'active-no';
+    toggle('block-kids-count', val);
+  }
+  function toggle(id, show) {
+    document.getElementById(id).classList.toggle('shown', show);
+  }
+
+  function sendRSVP() {
+    const name  = document.getElementById('m-name').value.trim();
+    const msgEl = document.getElementById('form-msg');
+    const btn   = document.getElementById('rsvp-btn');
+
+    if (!name)           { msgEl.style.color = 'var(--burgundy-mid)'; msgEl.textContent = 'Vă rugăm să introduceți numele.'; return; }
+    if (attending===null){ msgEl.style.color = 'var(--burgundy-mid)'; msgEl.textContent = 'Vă rugăm să selectați răspunsul.'; return; }
+    if (attending && hasPartner===true && !document.getElementById('m-partner').value.trim()) {
+      msgEl.style.color='var(--burgundy-mid)'; msgEl.textContent='Vă rugăm să introduceți numele partenerului/partenerei.'; return;
+    }
+    if (attending && hasKids===true && !document.getElementById('m-kids').value.trim()) {
+      msgEl.style.color='var(--burgundy-mid)'; msgEl.textContent='Vă rugăm să introduceți numărul de copii.'; return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Se trimite…';
+
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      guest_name : name,
+      attending  : attending ? 'Da — participă' : 'Nu — nu participă',
+      partner    : attending && hasPartner ? document.getElementById('m-partner').value || '—' : 'N/A',
+      kids       : attending && hasKids    ? document.getElementById('m-kids').value    || '—' : 'N/A',
+      message    : attending
+                   ? document.getElementById('m-message').value  || '—'
+                   : (document.getElementById('m-decline').value || '—'),
+    }).then(() => {
+      msgEl.style.color = 'var(--burgundy-mid)';
+      msgEl.textContent = attending
+        ? '✓ Mulțumim! Abia așteptăm să sărbătorim împreună cu voi.'
+        : '✓ Ne pare rău că nu puteți fi alături. Mulțumim că ne-ați anunțat.';
+      btn.textContent = 'Trimis ✓';
+    }).catch(() => {
+      msgEl.style.color = '#c0392b';
+      msgEl.textContent = 'Ceva nu a funcționat. Vă rugăm să încercați din nou.';
+      btn.disabled = false;
+      btn.textContent = 'Trimite răspunsul!';
+    });
+  }
+
+  /* ═══════════ SCROLL REVEAL ═══════════ */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
