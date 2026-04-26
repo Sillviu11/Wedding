@@ -731,7 +731,7 @@
     </svg></div>
   </div>
 
-  <p class="deck-hint">Apăsați pe pachetul de cărți pentru a deschide cartea câștigătoare</p>
+  <p class="deck-hint">Apăsați pentru a deschide cartea câștigătoare</p>
 </div>
 
 <!-- ACE OF HEARTS overlay — pops up on click, auto-closes after 5s -->
@@ -763,7 +763,7 @@
 ══════════════════════════════════════════ -->
 <section id="hero">
   <div id="hero-bg">
-    <video autoplay muted loop playsinline preload="auto">
+    <video id="hero-video" muted loop playsinline preload="auto">
       <source src="video.mp4" type="video/mp4"/>
     </video>
   </div>
@@ -803,7 +803,7 @@
 	<strong>Mihaela și Cristian Drăguț</strong><br/>
     vă invităm să ne fiți alături în ziua în care iubirea<br/>
     noastră devine un legământ sfânt.<br/><br/>
-	Pe drumul către fericire ne vor fi sprijin și lumină nașii<br/>
+	Pe drumul către fericire ne vor fi sprijin și lumină, nașii<br/>
 	<strong>Maria și Ștefan Crăciun<strong><br/><br/>
   </p>
   <div class="divider-ornament">✦ ✦ ✦</div>
@@ -882,7 +882,7 @@
 <section id="rsvp">
   <div class="inner reveal">
     <!-- ✏️ ÎNLOCUIȚI DATA LIMITĂ -->
-    <p class="section-label" style="justify-content:center;">Vă rugăm să confirmați prezența până pe 15 august</p>
+    <p class="section-label" style="justify-content:center;">Vă rugăm să confirmați prezența până la data de 15 august</p>
     <h2 class="rsvp-title">Veți petrece alături de noi?</h2>
     <p class="rsvp-sub">Apăsați butonul de mai jos pentru a completa formularul de confirmare</p>
     <button class="btn-open-rsvp" onclick="openRSVP()">Trimite răspunsul!</button>
@@ -1029,6 +1029,13 @@
     const intro = document.getElementById('card-intro');
     intro.classList.add('hidden');
     document.body.style.overflow = '';
+
+    // Start background video (must be triggered after user interaction)
+    const vid = document.getElementById('hero-video');
+    if (vid) {
+      vid.muted = true;
+      vid.play().catch(() => {});
+    }
 
     // Start music
     const a = document.getElementById('bg-music');
