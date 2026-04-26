@@ -229,8 +229,14 @@
     }
     #hero-bg {
       position: absolute; inset: 0;
-      background:
-        linear-gradient(135deg, var(--burgundy-deep) 0%, var(--burgundy) 45%, var(--burgundy-mid) 100%);
+      background: var(--burgundy-deep);
+    }
+    #hero-bg video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center;
+      opacity: 0.72;
     }
     /* Decorative texture overlay */
     #hero-bg::before {
@@ -665,13 +671,13 @@
       <!-- underline below stars -->
       <line x1="30" y1="44" x2="130" y2="44" stroke="#C9A050" stroke-width="0.8" opacity="0.7"/>
       <!-- line 1: Fiecare joc -->
-      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">Fiecare joc</text>
+      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">„Fiecare joc</text>
       <!-- line 2: are -->
       <text x="80" y="105" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">are</text>
       <!-- line 3: o carte -->
       <text x="80" y="130" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">o carte</text>
       <!-- line 4: câștigătoare -->
-      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare</text>
+      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare"</text>
       <!-- line 5: heart -->
       <text x="80" y="188" font-family="serif" font-size="22" fill="#C9A050" text-anchor="middle">♥</text>
     </svg></div>
@@ -685,10 +691,10 @@
       <text x="141" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
       <text x="80" y="38" font-family="serif" font-size="10" fill="#C9A050" text-anchor="middle" letter-spacing="5">✦ ✦ ✦</text>
       <line x1="30" y1="44" x2="130" y2="44" stroke="#C9A050" stroke-width="0.8" opacity="0.7"/>
-      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">Fiecare joc</text>
+      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">„Fiecare joc</text>
       <text x="80" y="105" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">are</text>
       <text x="80" y="130" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">o carte</text>
-      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare</text>
+      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare"</text>
       <text x="80" y="188" font-family="serif" font-size="22" fill="#C9A050" text-anchor="middle">♥</text>
     </svg></div>
     <div class="deck-card back"><svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
@@ -701,10 +707,10 @@
       <text x="141" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
       <text x="80" y="38" font-family="serif" font-size="10" fill="#C9A050" text-anchor="middle" letter-spacing="5">✦ ✦ ✦</text>
       <line x1="30" y1="44" x2="130" y2="44" stroke="#C9A050" stroke-width="0.8" opacity="0.7"/>
-      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">Fiecare joc</text>
+      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">„Fiecare joc</text>
       <text x="80" y="105" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">are</text>
       <text x="80" y="130" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">o carte</text>
-      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare</text>
+      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare"</text>
       <text x="80" y="188" font-family="serif" font-size="22" fill="#C9A050" text-anchor="middle">♥</text>
     </svg></div>
     <div class="deck-card back"><svg viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
@@ -717,10 +723,10 @@
       <text x="141" y="215" font-family="serif" font-size="9" fill="#C9A050" text-anchor="middle" opacity="0.6">♥</text>
       <text x="80" y="38" font-family="serif" font-size="10" fill="#C9A050" text-anchor="middle" letter-spacing="5">✦ ✦ ✦</text>
       <line x1="30" y1="44" x2="130" y2="44" stroke="#C9A050" stroke-width="0.8" opacity="0.7"/>
-      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">Fiecare joc</text>
+      <text x="80" y="80" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">„Fiecare joc</text>
       <text x="80" y="105" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">are</text>
       <text x="80" y="130" font-family="Georgia,'Times New Roman',serif" font-size="15" font-style="italic" fill="white" text-anchor="middle">o carte</text>
-      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare</text>
+      <text x="80" y="155" font-family="Georgia,'Times New Roman',serif" font-size="13" font-style="italic" fill="white" text-anchor="middle">câștigătoare"</text>
       <text x="80" y="188" font-family="serif" font-size="22" fill="#C9A050" text-anchor="middle">♥</text>
     </svg></div>
   </div>
@@ -756,7 +762,11 @@
      HERO
 ══════════════════════════════════════════ -->
 <section id="hero">
-  <div id="hero-bg"></div>
+  <div id="hero-bg">
+    <video autoplay muted loop playsinline preload="auto">
+      <source src="video.mp4" type="video/mp4"/>
+    </video>
+  </div>
 
 
   <div class="hero-content">
@@ -872,7 +882,7 @@
 <section id="rsvp">
   <div class="inner reveal">
     <!-- ✏️ ÎNLOCUIȚI DATA LIMITĂ -->
-    <p class="section-label" style="justify-content:center;">Vă rugăm să confirmați prezența până pe TBD</p>
+    <p class="section-label" style="justify-content:center;">Vă rugăm să confirmați prezența până pe 15 august</p>
     <h2 class="rsvp-title">Veți petrece alături de noi?</h2>
     <p class="rsvp-sub">Apăsați butonul de mai jos pentru a completa formularul de confirmare</p>
     <button class="btn-open-rsvp" onclick="openRSVP()">Trimite răspunsul!</button>
@@ -975,8 +985,8 @@
      înlocuiți valorile de mai jos:
   ───────────────────────────────────────── */
   const EMAILJS_PUBLIC_KEY  = '5CrpJr0_eWh9yqUlN';
-  const EMAILJS_SERVICE_ID  = 'service_lklr8fm';
-  const EMAILJS_TEMPLATE_ID = 'template_6eu9ox9';
+  const EMAILJS_SERVICE_ID  = 'service_c37qnvk';
+  const EMAILJS_TEMPLATE_ID = 'template_mek06wa';
 
   /* ─────────────────────────────────────────
      ✏️  DATA NUNȚII — format: AAAA-LL-ZZ THH:MM:SS
